@@ -31,6 +31,7 @@ these servers are going to register their ip and port in the Central Server
 command: python client.py
 
 the client asks to the Central Server the list of available servers and a word, then with the list of servers calculates the distance and access to the nearest server requesting data according to the word that client is looking for
+words to test: network, center, born
 
 
 4) When the distributed server receives the connection, it looks for the word in the cache and if not there, just looks for it in the dictionary util/db.py and then update the cache
