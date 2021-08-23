@@ -2,32 +2,27 @@ import sys
 import getopt
 import socket
 import pickle
-from math import sin, cos, sqrt, atan2, radians
 
-#from utils.server_setup import *
-
+#dict to save available servers
 servers={}
-
-
-
 def server(port):
+
     #creating a socket object
     s = socket.socket()
-    print("socket successfully created in centrar server")
 
     #binding the host and the port to the socket
     s.bind(('', port))
-    print("socket binded to {}".format(port))
 
     #putting the socket in listening mode
     #this just will allow 3 connections to keep the performance low
     s.listen(3)
-    print("socket is listening right now")
+    print("socket is listening right now in port {}".format(port))
 
     #infinite loop to accept connection with other sockets
     while True:
         conn, addr = s.accept()
-        print("connection received from {}".format(addr))
+        print("_______________________________")
+        print("Connection Received From {}".format(addr))
 
         #sending a message to the client
         mssg = 'You are connected to the port ' + str(port)
@@ -54,50 +49,17 @@ def server(port):
                 else:
                     checker = False
 
+            print("servers available")
             print(servers)
 
         elif typ==b'client':
             serversEncoded = pickle.dumps(servers)
-            #            conn.sendall(b'{}'.format(servers))
             conn.send(serversEncoded)
-            #typeClient = pickle.loads(conn.recv(1024))
-
-        #else:
-            '''
-            # here i get the coordinates
-            coordinatesClient = pickle.loads(typ);
-            #print(coordinatesClient)
-
-            #print(servers)
-
-            coorServer = {}
-            #arrayServers = []
-            closestServer = 1000000.0
-            keyClosestServer = 0
-
-            #tmpServer = 0
-            for key in servers:
-                arrayServers = []
-                arrayServers.append(servers[key][0])
-                arrayServers.append(servers[key][1])
-
-                distanceBetweenServers = distance(coordinatesClient,arrayServers)
-                if (distanceBetweenServers < closestServer):
-                    closestServer = distanceBetweenServers
-                    keyClosestServer = key
-
-            #print("keyClosestServer")
-            #print(keyClosestServer)
-
-            chosenServer = pickle.dumps(servers[keyClosestServer])
-            conn.send(chosenServer)
-            '''
-
 
         #close the connection with the client
         conn.close()
-        print("client connection closed")
-        print(".------------------------------.")
+        print("Client Connection Closed")
+        print("_______________________________")
 
 if __name__=='__main__':
     argv = sys.argv[1:]

@@ -3,7 +3,6 @@ import getopt
 import sys
 import random
 import time
-#import lru
 import pickle #to manage data transfer between sockets
 import lru_cache
 from utils.db import *
@@ -14,50 +13,36 @@ recvsize=9999999
 def server():
     # create a socket object
     s = socket.socket()
-    print ("Socket successfully created on distributed server")
 
     #binding the host and the port to the socket
-    print ("socket binded to {}".format(port))
     s.bind(('', port))
-    print ("socket binded to {}".format(port))
 
     # put the socket into listening mode
     s.listen(5) #allow 5 connections
-    print ("socket is listening")
+    print ("socket is listening in port {}".format(port))
 
     # a forever loop until we interrupt it or
     # an error occurs
     while True:
         # Establish connection with client.
         conn, addr = s.accept()
-        print("server.py server() connection received from {}".format(addr))
+        print("connection received from {}".format(addr))
 
         # send a verified message to the client
-        mssg = 'from server.py line34 server() You are connected to the port ' + str(port)
+        mssg = 'You are connected to the port ' + str(port)
         conn.send(pickle.dumps(mssg))
 
         wordSearched = pickle.loads(conn.recv(1024))
-        #print("wordSearched")
-        #print(wordSearched)
-
-        #cache.put("1","1")
-        #cache.get("1")
-        #cache.show_entries()
 
         cache.get(wordSearched)
         result = cache.get(wordSearched)
-
-        #print(len(result))
-        #cache.show_entries()
-
 
         valid = False
         if(result == -1):
             for key in dictWords:
                 if (key == wordSearched):
-                    #print("sending the result to cache line 60")
+
                     cache.put(wordSearched,dictWords[wordSearched])
-                    #print("showing cache after insert")
 
                     cache_items = cache.show_entries();
                     response = cache_items[key]
@@ -70,6 +55,7 @@ def server():
                 response = "there is no information"
                 conn.send(pickle.dumps(response))
 
+            print("LRU cache:")
             print(cache.show_entries())
         else:
             #if the word exists
@@ -80,10 +66,11 @@ def server():
             response = cache_items[wordSearched]
             conn.send(pickle.dumps(response))
             #print("here there are elements in the cache")
+
+            print("LRU cache:")
             print(cache.show_entries())
 
         # Close the connection with the client
-        #print("server.py server() closing connectin in the server")
         conn.close()
 
 def client(port):
@@ -92,34 +79,25 @@ def client(port):
         c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         # connect to the server on local computer
-        # hostname = localhost
         c.connect((socket.gethostname(), port))
 
         # receive data from the server
-        print (c.recv(1024))
+        #print (c.recv(1024))
+        c.recv(1024)
         c.send(b'server')
 
         print(portinfo)
         portinfoEncoded = pickle.dumps(portinfo)
         c.send(portinfoEncoded)
-        #portinfoEncoded = portinfo.encode()
-        #c.send(portinfoEncoded)
 
         print(c.recv(recvsize))
         c.close()
     except socket.error:
         print("Unable to connect to port {}".format(port))
-    #    port+=1
-    #    if port<num_central_server:
-    #        print("Trying to connect to port {}".format(port))
-    #        client(port)
-    #    else:
-    #        print("The location of this server cannot be delivered to central servers")
-    #        sys.exit()
 
 if __name__=='__main__':
 
-    csize=2 #chace size
+    csize=3 #chace size
     timeout=10 #to expires (seconds)
     argv = sys.argv[1:] #here we take the port
 
@@ -129,7 +107,7 @@ if __name__=='__main__':
         print('Something went wrong with your command!')
         sys.exit(2)
     for op,ar in opts:
-        print(op,ar)
+        #print(op,ar)
         if op=="-t":
             try:
                 timeout=float(ar)
@@ -164,26 +142,8 @@ if __name__=='__main__':
     #Connect to the central server in port 20000
     client(20000)
 
-
-
-
     #create the server cache
     cache = lru_cache.SimpleLRUCache(csize) #lru cache
-
-    '''
-        valid = False
-        while valid == False:
-            print(type(op))
-            print(op)
-            if(op == "1"):
-                print()
-                valid = True
-            elif (op == "2"):
-                valid = True
-            else:
-                valid = False
-                print("options allowed: 1 or 2")
-    '''
 
     #Ready to serve clients
     server()
